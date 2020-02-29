@@ -1,9 +1,7 @@
 package datadog.trace.agent.tooling;
 
 import static datadog.trace.agent.tooling.ClassLoaderMatcher.BOOTSTRAP_CLASSLOADER;
-import static datadog.trace.bootstrap.WeakMap.Provider.newWeakMap;
 
-import datadog.trace.bootstrap.WeakMap;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -36,7 +34,7 @@ public class HelperInjector implements Transformer {
   private final Set<String> helperClassNames;
   private final Map<String, byte[]> dynamicTypeMap = new LinkedHashMap<>();
 
-  private final WeakMap<ClassLoader, Boolean> injectedClassLoaders = newWeakMap();
+  private final WeakCache<ClassLoader, Boolean> injectedClassLoaders = WeakCache.newWeakCache();
 
   private final List<WeakReference<Object>> helperModules = new CopyOnWriteArrayList<>();
   /**
@@ -94,7 +92,7 @@ public class HelperInjector implements Transformer {
         classLoader = BOOTSTRAP_CLASSLOADER_PLACEHOLDER;
       }
 
-      if (!injectedClassLoaders.containsKey(classLoader)) {
+      if (injectedClassLoaders.getIfPresent(classLoader) == null) {
         try {
           log.debug("Injecting classes onto classloader {} -> {}", classLoader, helperClassNames);
 
