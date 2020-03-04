@@ -1,5 +1,6 @@
 package datadog.trace.agent.tooling.bytebuddy.matcher;
 
+import java.util.regex.Pattern;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -13,6 +14,9 @@ import net.bytebuddy.matcher.ElementMatcher;
  */
 public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
     extends ElementMatcher.Junction.AbstractBase<T> {
+
+  private static final Pattern COM_MCHANGE_PROXY =
+      Pattern.compile("com\\.mchange\\.v2\\.c3p0\\..*Proxy");
 
   public static <T extends TypeDescription> Junction<T> additionalLibraryIgnoresMatcher() {
     return new AdditionalLibraryIgnoresMatcher<>();
@@ -35,13 +39,31 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
         || name.startsWith("com.github.mustachejava.")
         || name.startsWith("com.jayway.jsonpath.")
         || name.startsWith("com.lightbend.lagom")
+        || name.startsWith("io.micrometer.")
+        || name.startsWith("io.github.classgraph.")
         || name.startsWith("javax.el.")
+        || name.startsWith("javax.crypto.")
+        || name.startsWith("javax.cache.")
+        || name.startsWith("javax.management.")
+        || name.startsWith("javax.persistence.")
         || name.startsWith("net.sf.cglib.")
-        || name.startsWith("org.apache.lucene")
+        || name.startsWith("nonapi.io.github.classgraph.")
+        || name.startsWith("org.apache.commons.")
+        || name.startsWith("org.apache.coyote.")
+        || name.startsWith("org.apache.el.")
+        || name.startsWith("org.apache.juli.")
+        || name.startsWith("org.apache.logging.")
+        || name.startsWith("org.apache.lucene.")
+        || name.startsWith("org.apache.naming.")
         || name.startsWith("org.apache.tartarus")
-        || name.startsWith("org.json.simple")
+        || name.startsWith("org.ehcache.")
+        || name.startsWith("org.hibernate.") // test this
+        || name.startsWith("org.json.simple.")
+        || name.startsWith("org.msgpack.")
         || name.startsWith("org.objectweb.asm.")
+        || name.startsWith("org.thymeleaf.")
         || name.startsWith("org.yaml.snakeyaml")) {
+
       return true;
     }
 
@@ -60,6 +82,7 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
           || name.startsWith("org.springframework.jmx.")
           || name.startsWith("org.springframework.jndi.")
           || name.startsWith("org.springframework.lang.")
+          || name.startsWith("org.springframework.mail.")
           || name.startsWith("org.springframework.messaging.")
           || name.startsWith("org.springframework.objenesis.")
           || name.startsWith("org.springframework.orm.")
@@ -140,6 +163,7 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
         return true;
       }
 
+      // FIXME: can we filter this more?
       if (name.startsWith("org.springframework.web.")) {
         if (name.startsWith("org.springframework.web.servlet.")
             || name.startsWith("org.springframework.web.reactive.")) {
@@ -161,7 +185,10 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
         || name.startsWith("org.apache.xerces.")
         || name.startsWith("org.apache.xml.")
         || name.startsWith("org.apache.xpath.")
-        || name.startsWith("org.xml.")) {
+        || name.startsWith("org.xml.")
+        || name.startsWith("com.sun.org.apache.xerces.")
+        || name.startsWith("com.sun.org.apache.xalan.")
+        || name.startsWith("com.sun.xml.")) {
       return true;
     }
 
@@ -234,8 +261,41 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
       return true;
     }
 
+    if (name.startsWith("okio.")) {
+      if (name.equals("okio.AsyncTimeout$Watchdog")) {
+        return false;
+      }
+      return true;
+    }
+
+    if (name.startsWith("org.hsqldb.")) {
+      if (name.startsWith("org.hsqldb.jdbc.")) {
+        return false;
+      }
+      return true;
+    }
+
+    if (name.startsWith("org.apache.catalina.")) {
+      if (name.startsWith("org.apache.catalina.servlets.")
+          || name.startsWith("org.apache.catalina.connector.")) {
+        return false;
+      }
+      return true;
+    }
+
+    if (name.startsWith("org.apache.tomcat.")) {
+      if (name.startsWith("org.apache.tomcat.jdbc.")) {
+        return false;
+      }
+      return true;
+    }
+
     // kotlin, note we do not ignore kotlinx because we instrument coroutins code
     if (name.startsWith("kotlin.")) {
+      return true;
+    }
+
+    if (COM_MCHANGE_PROXY.matcher(name).matches()) {
       return true;
     }
 
