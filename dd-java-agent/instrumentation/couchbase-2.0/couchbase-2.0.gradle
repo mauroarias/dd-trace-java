@@ -58,6 +58,8 @@ dependencies {
   // Earliest version that seems to allow queries with CouchbaseMock:
   testCompile group: 'com.couchbase.client', name: 'java-client', version: '2.5.0'
 
+  testCompile project(':dd-java-agent:instrumentation:java-concurrent')
+
   latestDepTestCompile group: 'org.springframework.data', name: 'spring-data-couchbase', version: '3.+'
   latestDepTestCompile group: 'com.couchbase.client', name: 'java-client', version: '2.+'
   latestDepTestCompile group: 'com.couchbase.client', name: 'encryption', version: '+'

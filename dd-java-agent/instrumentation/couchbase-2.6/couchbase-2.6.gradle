@@ -50,6 +50,8 @@ dependencies {
 
   testCompile project(':dd-java-agent:instrumentation:couchbase-2.0')
   testCompile project(path: ':dd-java-agent:instrumentation:couchbase-2.0', configuration: 'testArtifacts')
+  testCompile project(':dd-java-agent:instrumentation:java-concurrent')
+  
   testCompile group: 'com.couchbase.mock', name: 'CouchbaseMock', version: '1.5.19'
 
   testCompile group: 'org.springframework.data', name: 'spring-data-couchbase', version: '3.1.0.RELEASE'
