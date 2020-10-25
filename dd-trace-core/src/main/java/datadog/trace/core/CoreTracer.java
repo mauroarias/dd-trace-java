@@ -69,11 +69,7 @@ public class CoreTracer implements AgentTracer.TracerAPI {
   private static final String TRACER_VERSION_STATSD_TAG = "tracer_version";
 
   // FIXME: This is static instead of instance because we don't reliably close the tracer in tests.
-  private static final PendingTraceBuffer PENDING_TRACE_BUFFER = new PendingTraceBuffer();
-
-  static {
-    PENDING_TRACE_BUFFER.start();
-  }
+  private final PendingTraceBuffer pendingTraceBuffer = new PendingTraceBuffer();
 
   /** Default service name if none provided on the trace or span */
   final String serviceName;
@@ -178,6 +174,7 @@ public class CoreTracer implements AgentTracer.TracerAPI {
       final Map<String, String> taggedHeaders,
       final int partialFlushMinSpans,
       final StatsDClient statsDClient) {
+    pendingTraceBuffer.start();
 
     assert localRootSpanTags != null;
     assert defaultSpanTags != null;
@@ -229,7 +226,7 @@ public class CoreTracer implements AgentTracer.TracerAPI {
       this.writer = writer;
     }
 
-    pendingTraceFactory = new PendingTrace.Factory(this, PENDING_TRACE_BUFFER);
+    pendingTraceFactory = new PendingTrace.Factory(this, pendingTraceBuffer);
     this.writer.start();
 
     shutdownCallback = new ShutdownHook(this);
@@ -483,14 +480,14 @@ public class CoreTracer implements AgentTracer.TracerAPI {
 
   @Override
   public void close() {
-    // FIXME: can't close PENDING_TRACE_BUFFER since it is a static/shared instance.
-    // PENDING_TRACE_BUFFER.close();
+    // FIXME: can't close pendingTraceBuffer since it is a static/shared instance.
+    // pendingTraceBuffer.close();
     writer.close();
   }
 
   @Override
   public void flush() {
-    PENDING_TRACE_BUFFER.flush();
+    pendingTraceBuffer.flush();
     writer.flush();
   }
 
